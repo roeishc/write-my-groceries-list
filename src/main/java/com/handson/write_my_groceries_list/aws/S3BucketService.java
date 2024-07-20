@@ -33,15 +33,14 @@ public class S3BucketService {
     private AmazonS3 s3Client;
 
 
-    public String uploadImage(MultipartFile image) {
+    public String uploadImage(MultipartFile image, String fileNameToSaveInS3) {
         String format = getImageFileType(image);
         if (format.equals(INVALID)) {
             logger.error("File is not a valid image (PNG/JPG/JPEG).");
             return null;
         }
 
-        String fileName = generateFileName(image);
-        String bucketPath = "apps/roeis/groceries/" + fileName;
+        String bucketPath = "apps/roeis/groceries/" + fileNameToSaveInS3;
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(image.getSize());
@@ -61,9 +60,9 @@ public class S3BucketService {
         return s3Client.getUrl(bucket, bucketPath).toString();
     }
 
-    private String generateFileName(MultipartFile file) {
-        return Objects.requireNonNull(file.getOriginalFilename()).replace(" ", "_")
-                + new Date().getTime();
+    public static String generateFileName(MultipartFile file) {
+        return new Date().getTime() + "-" +
+                Objects.requireNonNull(file.getOriginalFilename()).replace(" ", "_");
     }
 
     public String getImageFileType(MultipartFile file) {
