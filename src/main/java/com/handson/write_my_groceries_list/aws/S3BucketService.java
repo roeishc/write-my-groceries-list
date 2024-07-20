@@ -3,6 +3,7 @@ package com.handson.write_my_groceries_list.aws;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,23 +25,47 @@ public class S3BucketService {
 
     private static final Logger logger = LoggerFactory.getLogger(S3BucketService.class);
 
-    private final String INVALID = "invalid";
+    private static final String INVALID = "invalid";
+
+    private final String bucketPath = "apps/roeis/groceries/";
 
     @Value("${bucket.url}")
     String bucket;
+
 
     @Autowired  
     private AmazonS3 s3Client;
 
 
+    public byte[] downloadImage(String fileNameInS3){
+        S3Object s3Object = s3Client.getObject(bucket, bucketPath + fileNameInS3);
+        S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+        byte[] content = null;
+        try {
+            content = IOUtils.toByteArray(s3ObjectInputStream);
+        }
+        catch (Exception e) {
+            logger.error("Failed to download image: " + fileNameInS3 + "\n" + e.toString());
+        }
+        finally {
+            try {
+                s3ObjectInputStream.close();
+            }
+            catch (Exception e) {
+                logger.error("Failed to close S3ObjectInputStream:\n" + e.toString());
+            }
+        }
+        return content;
+    }
+
     public String uploadImage(MultipartFile image, String fileNameToSaveInS3) {
-        String format = getImageFileType(image);
+        String format = getImageFileType(image.getName());
         if (format.equals(INVALID)) {
             logger.error("File is not a valid image (PNG/JPG/JPEG).");
             return null;
         }
 
-        String bucketPath = "apps/roeis/groceries/" + fileNameToSaveInS3;
+        String fullImagePath =  bucketPath + fileNameToSaveInS3;
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(image.getSize());
@@ -48,7 +73,7 @@ public class S3BucketService {
 
         try {
             s3Client.putObject(new PutObjectRequest(
-                    bucket, bucketPath, image.getInputStream(), metadata));
+                    bucket, fullImagePath, image.getInputStream(), metadata));
         } catch (IOException e) {
             logger.error("Failed to save image in bucket:\n" + e.toString());
             return null;
@@ -57,7 +82,7 @@ public class S3BucketService {
             logger.error("Unexpected exception:\n" + e.toString());
             return null;
         }
-        return s3Client.getUrl(bucket, bucketPath).toString();
+        return s3Client.getUrl(bucket, fullImagePath).toString();
     }
 
     public static String generateFileName(MultipartFile file) {
@@ -65,8 +90,7 @@ public class S3BucketService {
                 Objects.requireNonNull(file.getOriginalFilename()).replace(" ", "_");
     }
 
-    public String getImageFileType(MultipartFile file) {
-        String fileName = file.getOriginalFilename();
+    public static String getImageFileType(String fileName) {
         if (fileName == null)
             return INVALID;
         String lowerCaseFileName = fileName.toLowerCase();
@@ -78,6 +102,15 @@ public class S3BucketService {
             return "jpeg";
         }
         return INVALID;
+    }
+
+    public static String determineContentType(String fileName) {
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg"))
+            return "image/jpeg";
+        else if (fileName.endsWith(".png"))
+            return "image/png";
+        else // default content type if unknown
+            return "application/octet-stream";
     }
 
 
