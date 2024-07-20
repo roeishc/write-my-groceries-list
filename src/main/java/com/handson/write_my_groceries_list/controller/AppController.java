@@ -21,7 +21,6 @@ public class AppController {
 
     @PostMapping("/image")
     public ResponseEntity<?> uploadReceiptImage(@RequestParam("image")MultipartFile image){
-        String bucketPath = "apps/roeis/groceries/" + image.getOriginalFilename();
         String imageUrl = s3BucketService.uploadImage(image);
         if (imageUrl == null){
             return new ResponseEntity<>("Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);

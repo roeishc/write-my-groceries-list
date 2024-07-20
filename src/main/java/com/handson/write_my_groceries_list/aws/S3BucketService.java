@@ -41,13 +41,15 @@ public class S3BucketService {
         }
 
         String fileName = generateFileName(image);
+        String bucketPath = "apps/roeis/groceries/" + fileName;
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(image.getSize());
         metadata.setContentType("image/" + format);
 
         try {
-            s3Client.putObject(new PutObjectRequest(bucket, fileName, image.getInputStream(), metadata));
+            s3Client.putObject(new PutObjectRequest(
+                    bucket, bucketPath, image.getInputStream(), metadata));
         } catch (IOException e) {
             logger.error("Failed to save image in bucket.");
             return null;
@@ -56,7 +58,7 @@ public class S3BucketService {
             logger.error("Unexpected exception: \n" + e.toString());
             return null;
         }
-        return s3Client.getUrl(bucket, fileName).toString();
+        return s3Client.getUrl(bucket, bucketPath).toString();
     }
 
     private String generateFileName(MultipartFile file) {
