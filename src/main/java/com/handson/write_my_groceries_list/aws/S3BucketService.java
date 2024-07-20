@@ -50,11 +50,11 @@ public class S3BucketService {
             s3Client.putObject(new PutObjectRequest(
                     bucket, bucketPath, image.getInputStream(), metadata));
         } catch (IOException e) {
-            logger.error("Failed to save image in bucket.");
+            logger.error("Failed to save image in bucket:\n" + e.toString());
             return null;
         }
         catch (Exception e){
-            logger.error("Unexpected exception: \n" + e.toString());
+            logger.error("Unexpected exception:\n" + e.toString());
             return null;
         }
         return s3Client.getUrl(bucket, bucketPath).toString();
