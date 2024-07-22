@@ -59,7 +59,7 @@ public class S3BucketService {
     }
 
     public String uploadImage(MultipartFile image, String fileNameToSaveInS3) {
-        String format = getImageFileType(image.getName());
+        String format = getImageFileType(image.getOriginalFilename());
         if (format.equals(INVALID)) {
             logger.error("File is not a valid image (PNG/JPG/JPEG).");
             return null;
