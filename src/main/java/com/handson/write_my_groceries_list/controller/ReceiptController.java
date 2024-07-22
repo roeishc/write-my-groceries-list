@@ -30,12 +30,10 @@ public class ReceiptController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String id){
-        UUID receiptId = UUID.fromString(id);
-        Optional<Receipt> receipt = receiptService.findById(receiptId);
+        Optional<Receipt> receipt = receiptService.findById(UUID.fromString(id));
         if (receipt.isEmpty())
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        ReceiptOut response = ReceiptOut.of(receipt.get());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(ReceiptOut.of(receipt.get()), HttpStatus.OK);
     }
 
 }

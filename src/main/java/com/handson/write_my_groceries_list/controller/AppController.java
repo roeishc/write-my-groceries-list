@@ -13,9 +13,6 @@ public class AppController {
 
     private static final Logger logger = LoggerFactory.getLogger(AppController.class);
 
-    @Autowired
-    S3BucketService s3BucketService;
-
 
     @GetMapping(path = "/helloWorld")
     public String helloWorld(){
