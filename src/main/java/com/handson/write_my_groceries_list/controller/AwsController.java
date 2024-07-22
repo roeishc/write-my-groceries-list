@@ -1,5 +1,6 @@
 package com.handson.write_my_groceries_list.controller;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.handson.write_my_groceries_list.aws.S3BucketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,16 @@ public class AwsController {
 
     @GetMapping("/image/{fileName}")
     public ResponseEntity<byte[]> downloadImage(@PathVariable String fileName){
-        byte[] imageBytes = s3BucketService.downloadImage(fileName);
+        byte[] imageBytes = null;
+        try{
+            imageBytes = s3BucketService.downloadImage(fileName);
+        }
+        catch (AmazonS3Exception e){    // image not found in s3
+            if (e.getStatusCode() == 404){
+                logger.debug("Requested image not found: " + fileName);
+                return new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
+            }
+        }
         if (imageBytes == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         HttpHeaders httpHeaders = new HttpHeaders();
