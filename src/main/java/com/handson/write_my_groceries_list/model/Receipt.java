@@ -80,5 +80,47 @@ public class Receipt implements Serializable {
         this.createdAt = createdAt;
     }
 
+
+    public static final class ReceiptBuilder {
+
+        private @NotNull DBUser user;
+
+        private String fileName;
+
+        private int totalCost;
+
+        private Date createdAt;
+
+
+        private ReceiptBuilder() {}
+
+        public static ReceiptBuilder aReceipt() {
+            return new ReceiptBuilder();
+        }
+
+        public ReceiptBuilder withUser(DBUser user) {
+            this.user = user;
+            return this;
+        }
+
+        public ReceiptBuilder withFileName(String fileName) {
+            this.fileName = fileName;
+            return this;
+        }
+
+        public ReceiptBuilder withTotalCost(int totalCost) {
+            this.totalCost = totalCost;
+            return this;
+        }
+
+        public ReceiptBuilder withCreatedAt(Date createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Receipt build() {
+            return new Receipt(user, fileName, totalCost, createdAt);
+        }
+    }
 }
 
