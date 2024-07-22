@@ -2,12 +2,14 @@ package com.handson.write_my_groceries_list.jwt;
 
 
 import com.google.common.base.MoreObjects;
+import com.handson.write_my_groceries_list.model.Receipt;
 import org.springframework.data.domain.Persistable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -16,11 +18,26 @@ public class DBUser implements Serializable, Persistable<Long> {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    protected Long id;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Access(AccessType.PROPERTY)
+//    @Access(AccessType.PROPERTY)
+    protected Long id;
+
+    @Column(nullable = false, length = 60)
+    private String name;
+
+    @Column(nullable = false, length = 255)
+    private String password;
+
+    @OneToMany(
+            mappedBy = "user",
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Receipt> receipts;
+
+
+    protected DBUser() {}
+
     public Long getId() {
         return id;
     }
@@ -35,15 +52,28 @@ public class DBUser implements Serializable, Persistable<Long> {
         return null == getId();
     }
 
+    public String getName() {
+        return name;
+    }
 
-    @Column(nullable = false, length = 60)
-    private String name;
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    public String getPassword() {
+        return password;
+    }
 
-    @Column(nullable = false, length = 255)
-    private String password;
+    public void setPassword(String password) {
+        this.password = password; //DBUser.hashPassword(unencryptedPassword);
+    }
 
-    protected DBUser() {
+    public List<Receipt> getReceipts() {
+        return receipts;
+    }
+
+    public void setReceipts(List<Receipt> receipts) {
+        this.receipts = receipts;
     }
 
     @Transient
@@ -60,30 +90,17 @@ public class DBUser implements Serializable, Persistable<Long> {
                 .toString();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setPassword(String password) {
-        this.password = password; //DBUser.hashPassword(unencryptedPassword);
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 
     public static final class UserBuilder {
 
-        protected Long id;
+        private Long id;
 
         private String name;
 
         private String password;//https://bcrypt-generator.com/ generate password user+email:javainuse,password:$2y$12$JfmXLQVmTZGpeYVgr6AVhejDGynQ739F4pJE1ZjyCPTvKIHTYb2fi
+
+        private List<Receipt> receipts;
+
 
         private UserBuilder() {}
 
@@ -106,11 +123,17 @@ public class DBUser implements Serializable, Persistable<Long> {
             return this;
         }
 
+        public UserBuilder receipts(List<Receipt> receipts){
+            this.receipts = receipts;
+            return this;
+        }
+
         public DBUser build() {
             DBUser user = new DBUser();
             user.setName(name);
             user.setPassword(password);
             user.setId(id);
+            user.setReceipts(receipts);
             return user;
         }
 
