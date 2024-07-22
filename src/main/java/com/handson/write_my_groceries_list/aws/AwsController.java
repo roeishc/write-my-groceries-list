@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/image")
 public class AwsController {
 
     private static final Logger logger = LoggerFactory.getLogger(AwsController.class);
@@ -22,7 +22,7 @@ public class AwsController {
     S3BucketService s3BucketService;
 
 
-    @GetMapping("/image/{fileName}")
+    @GetMapping("{fileName}")
     public ResponseEntity<byte[]> downloadImage(@PathVariable String fileName){
         byte[] imageBytes = null;
         try{
@@ -41,7 +41,7 @@ public class AwsController {
         return new ResponseEntity<>(imageBytes, httpHeaders, HttpStatus.OK);
     }
 
-    @PostMapping("/image")
+    @PostMapping()
     public ResponseEntity<?> uploadReceiptImage(@RequestParam("image") MultipartFile image){
         String imageUrl = s3BucketService.uploadImage(image, S3BucketService.generateFileName(image));
         if (imageUrl == null){

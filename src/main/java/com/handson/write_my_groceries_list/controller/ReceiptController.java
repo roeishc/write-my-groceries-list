@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/receipt")
 public class ReceiptController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceiptController.class);
@@ -28,19 +28,14 @@ public class ReceiptController {
     private S3BucketService s3BucketService;
 
 
-    @GetMapping(path = "/receipt")
-    public ResponseEntity<ReceiptOut> getReceiptByReceiptId(String stringId){
-        UUID receiptId = UUID.fromString(stringId);
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String id){
+        UUID receiptId = UUID.fromString(id);
         Optional<Receipt> receipt = receiptService.findById(receiptId);
         if (receipt.isEmpty())
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         ReceiptOut response = ReceiptOut.of(receipt.get());
         return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @GetMapping(path = "/test")
-    public ResponseEntity<?> getTest(){
-        return new ResponseEntity<>("test", HttpStatus.OK);
     }
 
 }
