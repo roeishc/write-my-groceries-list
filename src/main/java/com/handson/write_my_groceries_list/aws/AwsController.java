@@ -1,7 +1,6 @@
-package com.handson.write_my_groceries_list.controller;
+package com.handson.write_my_groceries_list.aws;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.handson.write_my_groceries_list.aws.S3BucketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

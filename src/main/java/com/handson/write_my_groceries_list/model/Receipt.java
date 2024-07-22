@@ -41,11 +41,17 @@ public class Receipt implements Serializable {
             id = UUID.randomUUID();
     }
 
+    public Receipt() {}
+
     public Receipt(DBUser user, String fileName, int totalCost, Date createdAt) {
         this.user = user;
         this.fileName = fileName;
         this.totalCost = totalCost;
         this.createdAt = createdAt;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public DBUser getUser() {
@@ -122,5 +128,6 @@ public class Receipt implements Serializable {
             return new Receipt(user, fileName, totalCost, createdAt);
         }
     }
+
 }
 
