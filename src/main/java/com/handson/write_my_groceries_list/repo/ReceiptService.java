@@ -22,8 +22,8 @@ public class ReceiptService {
         return receiptRepository.findById(id);
     }
 
-    public Iterable<Receipt> findReceiptsByUserId(Long userId){
-        return receiptRepository.findAllByUserId(userId);
+    public Iterable<Receipt> findReceiptsByUserName(String userName){
+        return receiptRepository.findAllByUserName(userName);
     }
 
     public void save(Receipt receipt){

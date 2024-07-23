@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface ReceiptRepository extends CrudRepository<Receipt, UUID> {
 
-    List<Receipt> findAllByUserId(Long userId);
+    List<Receipt> findAllByUserName(String userName);
 
 }

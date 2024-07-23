@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,9 +41,9 @@ public class ReceiptController {
     @Autowired JwtTokenUtil jwtTokenUtil;
 
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String id){
-        Optional<Receipt> receipt = receiptService.findById(UUID.fromString(id));
+    @GetMapping(path = "/{receiptId}")
+    public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String receiptId){
+        Optional<Receipt> receipt = receiptService.findById(UUID.fromString(receiptId));
         if (receipt.isEmpty())
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(ReceiptOut.of(receipt.get()), HttpStatus.OK);
@@ -68,6 +70,21 @@ public class ReceiptController {
         receiptService.save(receipt);
         return new ResponseEntity<>(ReceiptOut.of(receipt), HttpStatus.CREATED);
 
+    }
+
+    @GetMapping(path = "/getAllReceiptsByUser")
+    public ResponseEntity<List<ReceiptOut>> getAllReceipts(HttpServletRequest request){
+        Optional<DBUser> dbUser = dbUserService.findUserName(getUserName(request));
+        if (dbUser.isEmpty()){
+            logger.error("User not found in database; request:\n" + request);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+
+        Iterable<Receipt> receipts = receiptService.findReceiptsByUserName(dbUser.get().getName());
+        List<ReceiptOut> receiptOuts = new ArrayList<>();
+        receipts.forEach(receipt -> receiptOuts.add(ReceiptOut.of(receipt)));
+
+        return new ResponseEntity<>(receiptOuts, HttpStatus.OK);
     }
 
     private String getUserName(HttpServletRequest request){
