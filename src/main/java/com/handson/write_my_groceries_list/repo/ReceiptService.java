@@ -4,7 +4,6 @@ import com.handson.write_my_groceries_list.model.Receipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +24,10 @@ public class ReceiptService {
 
     public Iterable<Receipt> findReceiptsByUserId(Long userId){
         return receiptRepository.findAllByUserId(userId);
+    }
+
+    public void save(Receipt receipt){
+        receiptRepository.save(receipt);
     }
 
 }
