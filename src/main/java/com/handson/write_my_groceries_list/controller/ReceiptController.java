@@ -108,15 +108,7 @@ public class ReceiptController {
             logger.warn("No receipt exists with ID: " + receiptId);
             return new ResponseEntity<>("No receipt exists with ID: " + receiptId, HttpStatus.BAD_REQUEST);
         }
-        try{
-            s3BucketService.deleteImage(S3BucketService.getImagePath(receipt.get()));
-        }
-        catch (AmazonS3Exception e){
-            logger.warn("Failed to delete user's " + receipt.get().getUser().getName() + " image: " + receiptId +
-                    " in S3;\n" + e);
-            return new ResponseEntity<>("Failed to delete image from S3. Receipt was not deleted",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        s3BucketService.deleteImage(S3BucketService.getImagePath(receipt.get()));
         receiptService.deleteById(receipt.get().getId());
         return new ResponseEntity<>("Deleted receipt ID: " + receiptId, HttpStatus.OK);
     }
