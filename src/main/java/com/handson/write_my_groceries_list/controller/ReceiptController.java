@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +86,24 @@ public class ReceiptController {
         receipts.forEach(receipt -> receiptOuts.add(ReceiptOut.of(receipt)));
 
         return new ResponseEntity<>(receiptOuts, HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = "/{receiptId}")
+    public ResponseEntity<?> deleteReceiptByReceiptId(@PathVariable String receiptId){
+        Optional<Receipt> receipt;
+        try{
+            receipt = receiptService.findById(UUID.fromString(receiptId));
+        }
+        catch (IllegalArgumentException e){
+            logger.warn("Invalid UUID: " + receiptId +  "\n" + e);
+            return new ResponseEntity<>("Invalid ID: " + receiptId, HttpStatus.BAD_REQUEST);
+        }
+        if (receipt.isEmpty()){
+            logger.warn("No receipt exists with ID: " + receiptId);
+            return new ResponseEntity<>("No receipt exists with ID: " + receiptId, HttpStatus.BAD_REQUEST);
+        }
+        receiptService.deleteById(receipt.get().getId());
+        return new ResponseEntity<>("Deleted receipt ID: " + receiptId, HttpStatus.OK);
     }
 
     private String getUserName(HttpServletRequest request){

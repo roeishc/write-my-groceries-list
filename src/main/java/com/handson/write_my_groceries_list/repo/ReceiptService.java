@@ -30,4 +30,12 @@ public class ReceiptService {
         receiptRepository.save(receipt);
     }
 
+    public void delete(Receipt receipt){
+        receiptRepository.deleteById(receipt.getId());
+    }
+
+    public void deleteById(UUID uuid){
+        receiptRepository.deleteById(uuid);
+    }
+
 }
