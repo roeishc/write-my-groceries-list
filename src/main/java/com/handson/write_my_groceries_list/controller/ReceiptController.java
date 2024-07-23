@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +66,13 @@ public class ReceiptController {
                 Dates.nowUTC()
         );
         receiptService.save(receipt);
-        s3BucketService.uploadImage(image, getImagePath(receipt));
+        try {
+            s3BucketService.uploadImage(image, getImagePath(receipt));
+        }
+        catch (IOException e){
+            logger.warn(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
         return new ResponseEntity<>(ReceiptOut.of(receipt), HttpStatus.CREATED);
 

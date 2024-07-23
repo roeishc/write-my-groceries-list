@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 
 @RestController
 @RequestMapping("/api/image")
@@ -42,7 +44,7 @@ public class AwsController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> uploadReceiptImage(@RequestParam("image") MultipartFile image){
+    public ResponseEntity<?> uploadReceiptImage(@RequestParam("image") MultipartFile image) throws IOException {
         String imageUrl = s3BucketService.uploadImage(image, S3BucketService.generateFileName(image));
         if (imageUrl == null){
             return new ResponseEntity<>("Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);

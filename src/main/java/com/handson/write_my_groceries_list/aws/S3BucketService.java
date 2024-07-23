@@ -58,11 +58,15 @@ public class S3BucketService {
         return content;
     }
 
-    public String uploadImage(MultipartFile image, String fileNameToSaveInS3) {
+    public String uploadImage(MultipartFile image, String fileNameToSaveInS3) throws IOException {
         String format = getImageFileType(image.getOriginalFilename());
         if (format.equals(INVALID)) {
             logger.error("File is not a valid image (PNG/JPG/JPEG).");
             return null;
+        }
+
+        if (fileNameToSaveInS3 == null || fileNameToSaveInS3.isEmpty()){
+            throw new IOException("File name cannot be empty or null");
         }
 
         String fullImagePath =  bucketPath + fileNameToSaveInS3;
