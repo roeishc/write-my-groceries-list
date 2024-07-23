@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,14 +53,11 @@ public class ReceiptController {
     public ResponseEntity<?> createReceipt(HttpServletRequest request,
                                            @RequestParam MultipartFile image,
                                            @RequestParam int totalCost) {
-
         Optional<DBUser> dbUser = dbUserService.findUserName(getUserName(request));
-
         if (dbUser.isEmpty()){
             logger.error("User not found in database; request:\n" + request);
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         }
-
         Receipt receipt = new Receipt(
                 dbUser.get(),
                 image.getOriginalFilename(),
@@ -69,6 +65,8 @@ public class ReceiptController {
                 Dates.nowUTC()
         );
         receiptService.save(receipt);
+        s3BucketService.uploadImage(image, getImagePath(receipt));
+
         return new ResponseEntity<>(ReceiptOut.of(receipt), HttpStatus.CREATED);
 
     }
@@ -104,6 +102,14 @@ public class ReceiptController {
         }
         receiptService.deleteById(receipt.get().getId());
         return new ResponseEntity<>("Deleted receipt ID: " + receiptId, HttpStatus.OK);
+    }
+
+    private String getImagePath(String userName, String receiptId){
+        return userName + "/" + receiptId;
+    }
+
+    private String getImagePath(Receipt receipt){
+        return receipt.getUser().getName() + "/" + receipt.getId();
     }
 
     private String getUserName(HttpServletRequest request){
