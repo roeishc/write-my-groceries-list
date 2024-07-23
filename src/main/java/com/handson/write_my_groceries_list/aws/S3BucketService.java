@@ -4,6 +4,7 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import com.handson.write_my_groceries_list.model.Receipt;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +116,23 @@ public class S3BucketService {
             return "image/png";
         else // default content type if unknown
             return "application/octet-stream";
+    }
+
+    public void deleteImage(String fileNameInS3) {
+        try {
+            s3Client.deleteObject(new DeleteObjectRequest(bucket, bucketPath + fileNameInS3));
+            logger.info("Image deleted successfully: " + fileNameInS3);
+        } catch (Exception e) {
+            logger.error("Failed to delete image: " + fileNameInS3 + "\n" + e);
+        }
+    }
+
+    public static String getImagePath(String userName, String receiptId){
+        return userName + "/" + receiptId;
+    }
+
+    public static String getImagePath(Receipt receipt){
+        return receipt.getUser().getName() + "/" + receipt.getId();
     }
 
 

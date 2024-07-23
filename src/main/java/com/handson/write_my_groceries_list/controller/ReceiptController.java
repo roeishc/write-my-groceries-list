@@ -1,6 +1,7 @@
 package com.handson.write_my_groceries_list.controller;
 
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.handson.write_my_groceries_list.aws.S3BucketService;
 import com.handson.write_my_groceries_list.jwt.DBUser;
 import com.handson.write_my_groceries_list.jwt.DBUserService;
@@ -67,7 +68,7 @@ public class ReceiptController {
         );
         receiptService.save(receipt);
         try {
-            s3BucketService.uploadImage(image, getImagePath(receipt));
+            s3BucketService.uploadImage(image, S3BucketService.getImagePath(receipt));
         }
         catch (IOException e){
             logger.warn(e.getMessage());
@@ -107,16 +108,17 @@ public class ReceiptController {
             logger.warn("No receipt exists with ID: " + receiptId);
             return new ResponseEntity<>("No receipt exists with ID: " + receiptId, HttpStatus.BAD_REQUEST);
         }
+        try{
+            s3BucketService.deleteImage(S3BucketService.getImagePath(receipt.get()));
+        }
+        catch (AmazonS3Exception e){
+            logger.warn("Failed to delete user's " + receipt.get().getUser().getName() + " image: " + receiptId +
+                    " in S3;\n" + e);
+            return new ResponseEntity<>("Failed to delete image from S3. Receipt was not deleted",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         receiptService.deleteById(receipt.get().getId());
         return new ResponseEntity<>("Deleted receipt ID: " + receiptId, HttpStatus.OK);
-    }
-
-    private String getImagePath(String userName, String receiptId){
-        return userName + "/" + receiptId;
-    }
-
-    private String getImagePath(Receipt receipt){
-        return receipt.getUser().getName() + "/" + receipt.getId();
     }
 
     private String getUserName(HttpServletRequest request){
