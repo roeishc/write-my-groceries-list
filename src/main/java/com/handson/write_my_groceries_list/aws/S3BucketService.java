@@ -28,7 +28,7 @@ public class S3BucketService {
 
     private static final String INVALID = "invalid";
 
-    private final String bucketPath = "apps/roeis/groceries/";
+    private static final String bucketPath = "apps/roeis/groceries/";
 
     @Value("${bucket.url}")
     String bucket;
@@ -46,14 +46,14 @@ public class S3BucketService {
             content = IOUtils.toByteArray(s3ObjectInputStream);
         }
         catch (Exception e) {
-            logger.error("Failed to download image: " + fileNameInS3 + "\n" + e.toString());
+            logger.error("Failed to download image: " + fileNameInS3 + "\n" + e);
         }
         finally {
             try {
                 s3ObjectInputStream.close();
             }
             catch (Exception e) {
-                logger.error("Failed to close S3ObjectInputStream:\n" + e.toString());
+                logger.error("Failed to close S3ObjectInputStream:\n" + e);
             }
         }
         return content;
@@ -80,11 +80,11 @@ public class S3BucketService {
             s3Client.putObject(new PutObjectRequest(
                     bucket, fullImagePath, image.getInputStream(), metadata));
         } catch (IOException e) {
-            logger.error("Failed to save image in bucket:\n" + e.toString());
+            logger.error("Failed to save image in bucket:\n" + e);
             return null;
         }
         catch (Exception e){
-            logger.error("Unexpected exception:\n" + e.toString());
+            logger.error("Unexpected exception:\n" + e);
             return null;
         }
         return s3Client.getUrl(bucket, fullImagePath).toString();
@@ -135,6 +135,9 @@ public class S3BucketService {
         return receipt.getUser().getName() + "/" + receipt.getId();
     }
 
+    public static String getFullPathInBucket(String fileNameInS3){
+        return bucketPath + fileNameInS3;
+    }
 
     /**
      * creates a local temporary file, and assigns it a name with a random UUID

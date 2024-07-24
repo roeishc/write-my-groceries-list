@@ -66,15 +66,16 @@ public class ReceiptController {
                 true,
                 Dates.nowUTC()
         );
-        receiptService.save(receipt);
+        receipt.generateUUID(); // required for creating the path in s3
         try {
             s3BucketService.uploadImage(image, S3BucketService.getImagePath(receipt));
         }
         catch (IOException e){
-            logger.warn(e.getMessage());
+            logger.warn(e.getMessage() + ". image:\n" + image);
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
+        receipt.setFullPathInBucket(S3BucketService.getFullPathInBucket(S3BucketService.getImagePath(receipt)));
+        receiptService.save(receipt);
         return new ResponseEntity<>(ReceiptOut.of(receipt), HttpStatus.CREATED);
 
     }

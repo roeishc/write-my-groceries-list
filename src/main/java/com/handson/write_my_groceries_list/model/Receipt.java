@@ -32,6 +32,9 @@ public class Receipt implements Serializable {
     private int totalCost;
 
     @Column(nullable = false)
+    private String fullPathInBucket;
+
+    @Column(nullable = false)
     private boolean isActive;
 
     @Column
@@ -45,6 +48,15 @@ public class Receipt implements Serializable {
     }
 
     public Receipt() {}
+
+    public Receipt(DBUser user, String fileName, int totalCost, boolean isActive, String pathInS3, Date createdAt) {
+        this.user = user;
+        this.fileName = fileName;
+        this.totalCost = totalCost;
+        this.isActive = isActive;
+        this.fullPathInBucket = pathInS3;
+        this.createdAt = createdAt;
+    }
 
     public Receipt(DBUser user, String fileName, int totalCost, boolean isActive, Date createdAt) {
         this.user = user;
@@ -90,6 +102,14 @@ public class Receipt implements Serializable {
         isActive = active;
     }
 
+    public String getFullPathInBucket() {
+        return fullPathInBucket;
+    }
+
+    public void setFullPathInBucket(String fullPathInBucket) {
+        this.fullPathInBucket = fullPathInBucket;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -108,6 +128,8 @@ public class Receipt implements Serializable {
         private int totalCost;
 
         private boolean isActive;
+
+        private String pathInS3;
 
         private Date createdAt;
 
@@ -138,13 +160,18 @@ public class Receipt implements Serializable {
             return this;
         }
 
+        public ReceiptBuilder withPathInS3(String pathInS3){
+            this.pathInS3 = pathInS3;
+            return this;
+        }
+
         public ReceiptBuilder withCreatedAt(Date createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
         public Receipt build() {
-            return new Receipt(user, fileName, totalCost, isActive, createdAt);
+            return new Receipt(user, fileName, totalCost, isActive, pathInS3, createdAt);
         }
     }
 
