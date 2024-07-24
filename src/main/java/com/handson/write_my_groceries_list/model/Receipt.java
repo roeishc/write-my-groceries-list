@@ -31,6 +31,9 @@ public class Receipt implements Serializable {
     @Column
     private int totalCost;
 
+    @Column(nullable = false)
+    private boolean isActive;
+
     @Column
     private Date createdAt;
 
@@ -43,10 +46,11 @@ public class Receipt implements Serializable {
 
     public Receipt() {}
 
-    public Receipt(DBUser user, String fileName, int totalCost, Date createdAt) {
+    public Receipt(DBUser user, String fileName, int totalCost, boolean isActive, Date createdAt) {
         this.user = user;
         this.fileName = fileName;
         this.totalCost = totalCost;
+        this.isActive = isActive;
         this.createdAt = createdAt;
     }
 
@@ -95,6 +99,8 @@ public class Receipt implements Serializable {
 
         private int totalCost;
 
+        private boolean isActive;
+
         private Date createdAt;
 
 
@@ -119,13 +125,18 @@ public class Receipt implements Serializable {
             return this;
         }
 
+        public ReceiptBuilder withIsActive(boolean isActive){
+            this.isActive = isActive;
+            return this;
+        }
+
         public ReceiptBuilder withCreatedAt(Date createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
         public Receipt build() {
-            return new Receipt(user, fileName, totalCost, createdAt);
+            return new Receipt(user, fileName, totalCost, isActive, createdAt);
         }
     }
 

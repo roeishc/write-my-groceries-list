@@ -1,7 +1,6 @@
 package com.handson.write_my_groceries_list.controller;
 
 
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.handson.write_my_groceries_list.aws.S3BucketService;
 import com.handson.write_my_groceries_list.jwt.DBUser;
 import com.handson.write_my_groceries_list.jwt.DBUserService;
@@ -64,6 +63,7 @@ public class ReceiptController {
                 dbUser.get(),
                 image.getOriginalFilename(),
                 totalCost,
+                true,
                 Dates.nowUTC()
         );
         receiptService.save(receipt);
