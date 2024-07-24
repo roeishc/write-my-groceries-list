@@ -45,7 +45,7 @@ public class ReceiptController {
     @GetMapping(path = "/{receiptId}")
     public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String receiptId){
         Optional<Receipt> receipt = receiptService.findById(UUID.fromString(receiptId));
-        if (receipt.isEmpty())
+        if (receipt.isEmpty() || !receipt.get().isActive())
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(ReceiptOut.of(receipt.get()), HttpStatus.OK);
     }
@@ -89,8 +89,10 @@ public class ReceiptController {
 
         Iterable<Receipt> receipts = receiptService.findReceiptsByUserName(dbUser.get().getName());
         List<ReceiptOut> receiptOuts = new ArrayList<>();
-        receipts.forEach(receipt -> receiptOuts.add(ReceiptOut.of(receipt)));
-
+        receipts.forEach(receipt -> {
+            if (receipt.isActive())
+                receiptOuts.add(ReceiptOut.of(receipt));
+        });
         return new ResponseEntity<>(receiptOuts, HttpStatus.OK);
     }
 
@@ -104,9 +106,27 @@ public class ReceiptController {
             logger.warn("Invalid UUID: " + receiptId +  "\n" + e);
             return new ResponseEntity<>("Invalid ID: " + receiptId, HttpStatus.BAD_REQUEST);
         }
-        if (receipt.isEmpty()){
+        if (receipt.isEmpty() || !receipt.get().isActive()){
             logger.warn("No receipt exists with ID: " + receiptId);
-            return new ResponseEntity<>("No receipt exists with ID: " + receiptId, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("No receipt exists with ID: " + receiptId, HttpStatus.NOT_FOUND);
+        }
+        receipt.get().setActive(false);
+        receiptService.save(receipt.get());
+        return new ResponseEntity<>("Success", HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> deleteReceipt(@PathVariable String receiptId){
+        Optional<Receipt> receipt;
+        try{
+            receipt = receiptService.findById(UUID.fromString(receiptId));
+        }
+        catch (IllegalArgumentException e){
+            logger.warn("Invalid UUID: " + receiptId +  "\n" + e);
+            return new ResponseEntity<>("Invalid ID: " + receiptId, HttpStatus.BAD_REQUEST);
+        }
+        if (receipt.isEmpty() || !receipt.get().isActive()){
+            logger.warn("No receipt exists with ID: " + receiptId);
+            return new ResponseEntity<>("No receipt exists with ID: " + receiptId, HttpStatus.NOT_FOUND);
         }
         s3BucketService.deleteImage(S3BucketService.getImagePath(receipt.get()));
         receiptService.deleteById(receipt.get().getId());

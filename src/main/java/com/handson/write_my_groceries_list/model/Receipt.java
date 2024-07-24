@@ -82,6 +82,14 @@ public class Receipt implements Serializable {
         this.totalCost = totalCost;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
