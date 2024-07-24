@@ -44,9 +44,18 @@ public class ReceiptController {
 
     @GetMapping(path = "/{receiptId}")
     public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String receiptId){
-        Optional<Receipt> receipt = receiptService.findById(UUID.fromString(receiptId));
-        if (receipt.isEmpty() || !receipt.get().isActive())
+        Optional<Receipt> receipt;
+        try{
+            receipt = receiptService.findById(UUID.fromString(receiptId));
+        }
+        catch (IllegalArgumentException e){
+            logger.warn("Invalid UUID: " + receiptId +  "\n" + e);
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+        if (receipt.isEmpty() || !receipt.get().isActive()){
+            logger.warn("No receipt exists with ID: " + receiptId);
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(ReceiptOut.of(receipt.get()), HttpStatus.OK);
     }
 
