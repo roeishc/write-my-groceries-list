@@ -33,7 +33,6 @@ public class S3BucketService {
     @Value("${bucket.url}")
     String bucket;
 
-
     @Autowired  
     private AmazonS3 s3Client;
 
