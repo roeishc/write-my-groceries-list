@@ -31,7 +31,7 @@ public class S3BucketService {
     private static final String bucketPath = "apps/roeis/groceries/";
 
     @Value("${bucket.url}")
-    String bucket;
+    private String bucket;
 
     @Autowired  
     private AmazonS3 s3Client;
@@ -136,6 +136,10 @@ public class S3BucketService {
 
     public static String getFullPathInBucket(String fileNameInS3){
         return bucketPath + fileNameInS3;
+    }
+
+    public static String getFullPathInBucket(String userName, String receiptId){
+        return bucketPath + userName + "/" + receiptId;
     }
 
     /**

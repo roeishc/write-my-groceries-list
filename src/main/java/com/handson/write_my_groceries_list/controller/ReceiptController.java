@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.handson.write_my_groceries_list.util.Util.getUserName;
+
 @RestController
 @RequestMapping("/api/receipt")
 public class ReceiptController {
@@ -37,9 +39,11 @@ public class ReceiptController {
     @Autowired
     private S3BucketService s3BucketService;
 
-    @Autowired DBUserService dbUserService;
+    @Autowired
+    private DBUserService dbUserService;
 
-    @Autowired JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
 
     @GetMapping(path = "/{receiptId}")
@@ -141,27 +145,6 @@ public class ReceiptController {
         s3BucketService.deleteImage(S3BucketService.getImagePath(receipt.get()));
         receiptService.deleteById(receipt.get().getId());
         return new ResponseEntity<>("Deleted receipt ID: " + receiptId, HttpStatus.OK);
-    }
-
-    private String getUserName(HttpServletRequest request){
-        final String requestTokenHeader = request.getHeader("Authorization");
-        String userName = null;
-        String jwtToken = null;
-
-        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-            jwtToken = requestTokenHeader.substring(7);
-            try {
-                userName = jwtTokenUtil.getUsernameFromToken(jwtToken);
-            } catch (IllegalArgumentException e) {
-                System.out.println("Unable to get JWT Token");
-            } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token has expired");
-            }
-        } else if (!(request.getMethod().equals("OPTIONS")) && !request.getRequestURI().contains("actuator")){
-            logger.warn("JWT Token does not begin with Bearer String");
-        }
-
-        return userName;
     }
 
 }
