@@ -1,4 +1,4 @@
-package com.handson.write_my_groceries_list.aws;
+package com.handson.write_my_groceries_list.repo;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;

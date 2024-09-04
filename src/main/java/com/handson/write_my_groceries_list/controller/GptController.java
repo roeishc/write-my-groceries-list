@@ -1,9 +1,9 @@
-package com.handson.write_my_groceries_list.chatgpt;
+package com.handson.write_my_groceries_list.controller;
 
-import com.handson.write_my_groceries_list.aws.S3BucketService;
+import com.handson.write_my_groceries_list.repo.GptService;
+import com.handson.write_my_groceries_list.repo.S3BucketService;
 import com.handson.write_my_groceries_list.jwt.DBUser;
 import com.handson.write_my_groceries_list.jwt.DBUserService;
-import com.handson.write_my_groceries_list.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,14 @@ public class GptController {
     private DBUserService dbUserService;
 
 
-    @GetMapping
+    @GetMapping("/text")
+    public ResponseEntity<?> sendTextPrompt(@RequestParam String textPrompt){
+        String res = gptService.testingText(textPrompt);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/image")
     public ResponseEntity<?> getInfoAboutReceipt(HttpServletRequest request, @RequestParam String receiptId){
         Optional<DBUser> dbUser = dbUserService.findUserName(getUserName(request));
         if (dbUser.isEmpty()){
@@ -46,7 +53,7 @@ public class GptController {
                 S3BucketService.getFullPathInBucket(dbUser.get().getName(), receiptId)
         );
 
-        String res = gptService.testing("What is in this image?", tempLink);
+        String res = gptService.testingImage("What is in this image?", tempLink);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 

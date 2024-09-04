@@ -1,4 +1,4 @@
-package com.handson.write_my_groceries_list.aws;
+package com.handson.write_my_groceries_list.config;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;

@@ -8,7 +8,7 @@ import org.joda.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
-public class ReceiptOut {
+public class ReceiptResponse {
 
     private UUID id;
 
@@ -24,8 +24,8 @@ public class ReceiptOut {
         return Dates.atLocalTime(createdAt);
     }
 
-    public static ReceiptOut of(Receipt receipt){
-        ReceiptOut res = new ReceiptOut();
+    public static ReceiptResponse of(Receipt receipt){
+        ReceiptResponse res = new ReceiptResponse();
         res.id = receipt.getId();
         res.fileName = receipt.getFileName();
         res.totalCost = receipt.getTotalCost();

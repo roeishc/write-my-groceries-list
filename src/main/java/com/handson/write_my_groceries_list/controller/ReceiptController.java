@@ -1,15 +1,14 @@
 package com.handson.write_my_groceries_list.controller;
 
 
-import com.handson.write_my_groceries_list.aws.S3BucketService;
+import com.handson.write_my_groceries_list.repo.S3BucketService;
 import com.handson.write_my_groceries_list.jwt.DBUser;
 import com.handson.write_my_groceries_list.jwt.DBUserService;
 import com.handson.write_my_groceries_list.jwt.JwtTokenUtil;
 import com.handson.write_my_groceries_list.model.Receipt;
-import com.handson.write_my_groceries_list.model.ReceiptOut;
+import com.handson.write_my_groceries_list.model.ReceiptResponse;
 import com.handson.write_my_groceries_list.repo.ReceiptService;
 import com.handson.write_my_groceries_list.util.Dates;
-import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class ReceiptController {
 
 
     @GetMapping(path = "/{receiptId}")
-    public ResponseEntity<ReceiptOut> getReceiptByReceiptId(@PathVariable  String receiptId){
+    public ResponseEntity<ReceiptResponse> getReceiptByReceiptId(@PathVariable  String receiptId){
         Optional<Receipt> receipt;
         try{
             receipt = receiptService.findById(UUID.fromString(receiptId));
@@ -60,7 +59,7 @@ public class ReceiptController {
             logger.warn("No receipt exists with ID: " + receiptId);
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(ReceiptOut.of(receipt.get()), HttpStatus.OK);
+        return new ResponseEntity<>(ReceiptResponse.of(receipt.get()), HttpStatus.OK);
     }
 
     @PostMapping
@@ -89,12 +88,12 @@ public class ReceiptController {
         }
         receipt.setFullPathInBucket(S3BucketService.getFullPathInBucket(S3BucketService.getImagePath(receipt)));
         receiptService.save(receipt);
-        return new ResponseEntity<>(ReceiptOut.of(receipt), HttpStatus.CREATED);
+        return new ResponseEntity<>(ReceiptResponse.of(receipt), HttpStatus.CREATED);
 
     }
 
     @GetMapping(path = "/getAllReceiptsByUser")
-    public ResponseEntity<List<ReceiptOut>> getAllReceipts(HttpServletRequest request){
+    public ResponseEntity<List<ReceiptResponse>> getAllReceipts(HttpServletRequest request){
         Optional<DBUser> dbUser = dbUserService.findUserName(getUserName(request));
         if (dbUser.isEmpty()){
             logger.error("User not found in database; request:\n" + request);
@@ -102,12 +101,12 @@ public class ReceiptController {
         }
 
         Iterable<Receipt> receipts = receiptService.findReceiptsByUserName(dbUser.get().getName());
-        List<ReceiptOut> receiptOuts = new ArrayList<>();
+        List<ReceiptResponse> receiptResponses = new ArrayList<>();
         receipts.forEach(receipt -> {
             if (receipt.isActive())
-                receiptOuts.add(ReceiptOut.of(receipt));
+                receiptResponses.add(ReceiptResponse.of(receipt));
         });
-        return new ResponseEntity<>(receiptOuts, HttpStatus.OK);
+        return new ResponseEntity<>(receiptResponses, HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/{receiptId}")
