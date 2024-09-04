@@ -1,8 +1,11 @@
 package com.handson.write_my_groceries_list.repo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.handson.write_my_groceries_list.model.ChatCompletionResponse;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,10 @@ public class GptService {
 
     @Value("${openai.apikey}")
     private String openaiApiKey;
+
+    @Autowired
+    private ObjectMapper om;
+
 
     public String testingImage(String textPrompt, String imageUrl) {
         OkHttpClient client = new OkHttpClient().newBuilder().build();
@@ -56,21 +63,18 @@ public class GptService {
                 .addHeader("Authorization", "Bearer " + openaiApiKey)
                 .build();
 
-        HashMap<String, String> responseMap;
-        ResponseBody responseBody;
-
-        String res;
+        ChatCompletionResponse chatCompletionResponse;
         try (Response response = client.newCall(request).execute()) {
             if (response == null || response.body() == null){
                 logger.warn("GPT POST request failed, empty response or response body.");
                 return "GPT POST request failed";
             }
-            responseBody = response.body();
-            res = responseBody.string();
+            chatCompletionResponse = om.readValue(response.body().string(), ChatCompletionResponse.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return res;
+
+        return chatCompletionResponse.getChoices().get(0).getMessage().getContent();
     }
 
 }
