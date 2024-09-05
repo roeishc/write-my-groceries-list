@@ -2,7 +2,10 @@ package com.handson.write_my_groceries_list.repo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.handson.write_my_groceries_list.model.ChatCompletionResponse;
+import com.handson.write_my_groceries_list.model.VisionRequest;
+import com.handson.write_my_groceries_list.model.VisionResponse;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class GptService {
@@ -24,32 +28,69 @@ public class GptService {
     private ObjectMapper om;
 
 
-    public String testingImage(String textPrompt, String imageUrl) {
+    public String getDescriptionOfReceiptImage(String imageUrl) {
+
+        VisionRequest.Message message = getMessage(imageUrl);
+
+        // create the VisionRequest object
+        VisionRequest visionRequest = new VisionRequest();
+        visionRequest.setModel("gpt-4o-mini");
+        visionRequest.setMessages(List.of(message));
+        visionRequest.setMaxTokens(300);
+
+        // serialize VisionRequest to JSON
+        String requestBodyString;
+        try {
+            requestBodyString = om.writeValueAsString(visionRequest);
+        } catch (IOException e) {
+            logger.error("Error serializing VisionRequest", e);
+            return "Error creating request body";
+        }
+
+        // send the request
         OkHttpClient client = new OkHttpClient().newBuilder().build();
         MediaType mediaType = MediaType.parse("application/json");
-//        RequestBody body = RequestBody.create("{\r\n    \"model\": \"gpt-4o-mini\",\r\n    \"messages\": [\r\n      {\r\n        \"role\": \"user\",\r\n        \"content\": [\r\n          {\r\n            \"type\": \"text\",\r\n            \"text\": \"What’s in this image?\"\r\n          },\r\n          {\r\n            \"type\": \"image_url\",\r\n            \"image_url\": {\r\n              \"url\": \"https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg\"\r\n            }\r\n          }\r\n        ]\r\n      }\r\n    ],\r\n    \"max_tokens\": 300\r\n  }", mediaType);
-        RequestBody body = RequestBody.create("{\r\n    \"model\": \"gpt-4o-mini\",\r\n    \"messages\": [\r\n      {\r\n        \"role\": \"user\",\r\n        \"content\": [\r\n          {\r\n            \"type\": \"text\",\r\n            \"text\": " + textPrompt + "\r\n          },\r\n          {\r\n            \"type\": \"image_url\",\r\n            \"image_url\": {\r\n              \"url\": " + imageUrl + "\r\n            }\r\n          }\r\n        ]\r\n      }\r\n    ],\r\n    \"max_tokens\": 300\r\n  }", mediaType);
+        RequestBody body = RequestBody.create(mediaType, requestBodyString);
         Request request = new Request.Builder()
                 .url("https://api.openai.com/v1/chat/completions")
                 .method("POST", body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", "Bearer " + openaiApiKey)
                 .build();
-        String res;
+
+        // parse response
+        VisionResponse visionResponse;
         try (Response response = client.newCall(request).execute()) {
-            if (response == null || response.body() == null){
-                logger.warn("GPT POST request failed, empty response or response body.");
-                return "GPT POST request failed";
+            if (response == null || response.body() == null) {
+                logger.warn("Empty Vision response");
+                return "Vision request failed";
             }
-            System.out.println(response.body());
-            res = response.toString();
+            visionResponse = om.readValue(response.body().string(), VisionResponse.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return res;
+        return visionResponse.getChoices().get(0).getMessage().getContent();
     }
 
-    public String testingText(String textPrompt) {
+    @NotNull
+    private static VisionRequest.Message getMessage(String imageUrl) {
+        String textPrompt = "In this image there's a receipt in English. Please list all items in this receipt.";
+
+        // create the TextContent and ImageContent objects
+        VisionRequest.TextContent textContent = new VisionRequest.TextContent("text", textPrompt);
+
+        VisionRequest.ImageUrl imgUrl = new VisionRequest.ImageUrl(imageUrl);
+        VisionRequest.ImageContent imageContent = new VisionRequest.ImageContent("image_url", imgUrl);
+
+        // create the Message object containing both text and image contents
+        VisionRequest.Message message = new VisionRequest.Message();
+        message.setRole("user");
+        message.setContent(Arrays.asList(textContent, imageContent));
+        return message;
+    }
+
+
+    public String getResponseForText(String textPrompt) {
         textPrompt = "\"" + textPrompt + "\"";
         String systemRoleContent = "\"You are a helpful assistant.\"";
 

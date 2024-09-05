@@ -37,12 +37,12 @@ public class GptController {
 
     @GetMapping("/text")
     public ResponseEntity<?> sendTextPrompt(@RequestParam String textPrompt){
-        String res = gptService.testingText(textPrompt);
+        String res = gptService.getResponseForText(textPrompt);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
 
-    @GetMapping("/image")
+    @GetMapping("/receiptImage")
     public ResponseEntity<?> getInfoAboutReceipt(HttpServletRequest request, @RequestParam String receiptId){
         Optional<DBUser> dbUser = dbUserService.findUserName(getUserName(request));
         if (dbUser.isEmpty()){
@@ -53,7 +53,7 @@ public class GptController {
                 S3BucketService.getFullPathInBucket(dbUser.get().getName(), receiptId)
         );
 
-        String res = gptService.testingImage("What is in this image?", tempLink);
+        String res = gptService.getDescriptionOfReceiptImage(tempLink);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 

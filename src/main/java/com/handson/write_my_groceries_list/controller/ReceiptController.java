@@ -1,6 +1,7 @@
 package com.handson.write_my_groceries_list.controller;
 
 
+import com.handson.write_my_groceries_list.repo.GptService;
 import com.handson.write_my_groceries_list.repo.S3BucketService;
 import com.handson.write_my_groceries_list.jwt.DBUser;
 import com.handson.write_my_groceries_list.jwt.DBUserService;
@@ -19,10 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.handson.write_my_groceries_list.util.Util.getUserName;
 
@@ -43,6 +41,9 @@ public class ReceiptController {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private GptService gptService;
 
 
     @GetMapping(path = "/{receiptId}")
@@ -65,7 +66,7 @@ public class ReceiptController {
     @PostMapping
     public ResponseEntity<?> createReceipt(HttpServletRequest request,
                                            @RequestParam MultipartFile image,
-                                           @RequestParam int totalCost) {
+                                           @RequestParam float totalCost) {
         Optional<DBUser> dbUser = dbUserService.findUserName(getUserName(request));
         if (dbUser.isEmpty()){
             logger.error("User not found in database; request:\n" + request);
@@ -87,6 +88,13 @@ public class ReceiptController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         receipt.setFullPathInBucket(S3BucketService.getFullPathInBucket(S3BucketService.getImagePath(receipt)));
+
+        String tempLink = s3BucketService.generateLink(
+                S3BucketService.getFullPathInBucket(dbUser.get().getName(), receipt.getId().toString())
+        );
+
+        String gptResponse = gptService.getDescriptionOfReceiptImage(tempLink);
+
         receiptService.save(receipt);
         return new ResponseEntity<>(ReceiptResponse.of(receipt), HttpStatus.CREATED);
 

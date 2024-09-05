@@ -28,7 +28,7 @@ public class Receipt implements Serializable {
     private String fileName;
 
     @Column
-    private int totalCost;
+    private float totalCost;
 
     @Column(nullable = false)
     private String fullPathInBucket;
@@ -48,7 +48,7 @@ public class Receipt implements Serializable {
 
     public Receipt() {}
 
-    public Receipt(DBUser user, String fileName, int totalCost, boolean isActive, String pathInS3, Date createdAt) {
+    public Receipt(DBUser user, String fileName, float totalCost, boolean isActive, String pathInS3, Date createdAt) {
         this.user = user;
         this.fileName = fileName;
         this.totalCost = totalCost;
@@ -57,7 +57,7 @@ public class Receipt implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public Receipt(DBUser user, String fileName, int totalCost, boolean isActive, Date createdAt) {
+    public Receipt(DBUser user, String fileName, float totalCost, boolean isActive, Date createdAt) {
         this.user = user;
         this.fileName = fileName;
         this.totalCost = totalCost;
@@ -85,11 +85,11 @@ public class Receipt implements Serializable {
         this.fileName = fileName;
     }
 
-    public int getTotalCost() {
+    public float getTotalCost() {
         return totalCost;
     }
 
-    public void setTotalCost(int totalCost) {
+    public void setTotalCost(float totalCost) {
         this.totalCost = totalCost;
     }
 
@@ -124,7 +124,7 @@ public class Receipt implements Serializable {
 
         private String fileName;
 
-        private int totalCost;
+        private float totalCost;
 
         private boolean isActive;
 
@@ -149,10 +149,11 @@ public class Receipt implements Serializable {
             return this;
         }
 
-        public ReceiptBuilder withTotalCost(int totalCost) {
+        public ReceiptBuilder withTotalCost(float totalCost) {
             this.totalCost = totalCost;
             return this;
         }
+
 
         public ReceiptBuilder withIsActive(boolean isActive){
             this.isActive = isActive;

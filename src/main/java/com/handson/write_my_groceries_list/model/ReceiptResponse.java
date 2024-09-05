@@ -14,7 +14,7 @@ public class ReceiptResponse {
 
     private String fileName;
 
-    private int totalCost;
+    private float totalCost;
 
     private Date createdAt;
 
@@ -49,11 +49,11 @@ public class ReceiptResponse {
         this.fileName = fileName;
     }
 
-    public int getTotalCost() {
+    public float getTotalCost() {
         return totalCost;
     }
 
-    public void setTotalCost(int totalCost) {
+    public void setTotalCost(float totalCost) {
         this.totalCost = totalCost;
     }
 
