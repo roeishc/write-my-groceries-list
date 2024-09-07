@@ -25,8 +25,8 @@ public class AwsController {
     S3BucketService s3BucketService;
 
 
-    @GetMapping("{fileName}")
-    public ResponseEntity<byte[]> downloadImage(@PathVariable String fileName){
+    @GetMapping()
+    public ResponseEntity<byte[]> downloadImage(@RequestParam("fileName") String fileName){
         byte[] imageBytes = null;
         try{
             imageBytes = s3BucketService.downloadImage(fileName);

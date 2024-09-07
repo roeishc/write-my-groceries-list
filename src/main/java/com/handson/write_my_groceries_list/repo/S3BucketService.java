@@ -131,7 +131,7 @@ public class S3BucketService {
     }
 
     public static String getImagePath(Receipt receipt){
-        return receipt.getUser().getName() + "/" + receipt.getId();
+        return receipt.getUser().getName() + "/" + receipt.getId() + "." + getImageFileType(receipt.getFileName());
     }
 
     public static String getFullPathInBucket(String fileNameInS3){

@@ -93,7 +93,7 @@ public class ReceiptController {
                 S3BucketService.getFullPathInBucket(dbUser.get().getName(), receipt.getId().toString())
         );
 
-        String gptResponse = gptService.getDescriptionOfReceiptImage(tempLink);
+//        String gptResponse = gptService.getDescriptionOfReceiptImage(tempLink);
 
         receiptService.save(receipt);
         return new ResponseEntity<>(ReceiptResponse.of(receipt), HttpStatus.CREATED);
